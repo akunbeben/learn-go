@@ -8,7 +8,7 @@ import (
 )
 
 type Storage interface {
-	CreateAccount(*Account) (int64, error)
+	CreateAccount(*Account) error
 	DeleteAccount(int) error
 	UpdateAccount(*Account) (*Account, error)
 	GetAccountByID(int) (*Account, error)
@@ -56,7 +56,7 @@ func (s *PGStore) createAccountTable() error {
 	return err
 }
 
-func (s *PGStore) CreateAccount(acc *Account) (int64, error) {
+func (s *PGStore) CreateAccount(acc *Account) error {
 	stmt := `
 	INSERT INTO accounts
 		(first_name, last_name, number, balance, created_at, updated_at)
@@ -64,7 +64,7 @@ func (s *PGStore) CreateAccount(acc *Account) (int64, error) {
 		($1, $2, $3, $4, $5, $6)
 	`
 
-	account, err := s.db.Exec(
+	_, err := s.db.Exec(
 		stmt,
 		acc.FirstName,
 		acc.LastName,
@@ -75,10 +75,10 @@ func (s *PGStore) CreateAccount(acc *Account) (int64, error) {
 	)
 
 	if err != nil {
-		return 0, err
+		return err
 	}
 
-	return account.LastInsertId()
+	return nil
 }
 
 func (s *PGStore) DeleteAccount(id int) error {

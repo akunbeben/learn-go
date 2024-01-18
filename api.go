@@ -41,6 +41,7 @@ func (s *APIServer) Run() {
 
 	router.HandleFunc("/account", makeHTTPHandleFunc(s.handleAccount))
 	router.HandleFunc("/account/{id}", makeHTTPHandleFunc(s.handleGetAccountByID))
+	router.HandleFunc("/transfer", makeHTTPHandleFunc(s.handleTransfer))
 
 	log.Println("Server started on port: ", s.listenAddr)
 
@@ -99,27 +100,20 @@ func (s *APIServer) handleGetAccount(w http.ResponseWriter, r *http.Request) err
 }
 
 func (s *APIServer) handleCreateAccount(w http.ResponseWriter, r *http.Request) error {
-	createAccReq := new(CreateAccountRequest)
-
-	if err := json.NewDecoder(r.Body).Decode(createAccReq); err != nil {
+	req := new(CreateAccountRequest)
+	if err := json.NewDecoder(r.Body).Decode(req); err != nil {
 		return err
 	}
 
-	account := NewAccount(createAccReq.FirstName, createAccReq.LastName)
-
-	id, err := s.store.CreateAccount(account)
-
+	account, err := NewAccount(req.FirstName, req.LastName)
 	if err != nil {
 		return err
 	}
-
-	newAccount := &Account{
-		ID:        int(id),
-		FirstName: createAccReq.FirstName,
-		LastName:  createAccReq.LastName,
+	if err := s.store.CreateAccount(account); err != nil {
+		return err
 	}
 
-	return WriteJSON(w, http.StatusOK, newAccount)
+	return WriteJSON(w, http.StatusOK, account)
 }
 
 // func (s *APIServer) handleUpdateAccount(w http.ResponseWriter, r *http.Request) error {
@@ -158,6 +152,6 @@ func getID(r *http.Request) (int, error) {
 	return id, nil
 }
 
-// func (s *APIServer) handleTransfer(w http.ResponseWriter, r *http.Request) error {
-// 	return nil
-// }
+func (s *APIServer) handleTransfer(w http.ResponseWriter, r *http.Request) error {
+	return nil
+}

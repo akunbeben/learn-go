@@ -20,12 +20,12 @@ type Account struct {
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
-func NewAccount(firstName, lastName string) *Account {
+func NewAccount(firstName, lastName string) (*Account, error) {
 	return &Account{
 		FirstName: firstName,
 		LastName:  lastName,
 		Number:    int64(rand.Intn(10000000)),
 		CreatedAt: time.Now().UTC(),
 		UpdatedAt: time.Now().UTC(),
-	}
+	}, nil
 }
