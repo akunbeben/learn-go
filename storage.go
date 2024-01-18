@@ -93,7 +93,7 @@ func (s *PGStore) UpdateAccount(account *Account) (*Account, error) {
 	WHERE id = $3
 	`
 
-	rows, err := s.db.Query(
+	res, err := s.db.Exec(
 		stmt,
 		account.FirstName,
 		account.LastName,
@@ -104,11 +104,11 @@ func (s *PGStore) UpdateAccount(account *Account) (*Account, error) {
 		return nil, err
 	}
 
-	for rows.Next() {
-		return scanIntoAccount(rows)
+	if _, err := res.RowsAffected(); err != nil {
+		return nil, err
 	}
 
-	return nil, fmt.Errorf("account with id %d not found", account.ID)
+	return account, nil
 }
 func (s *PGStore) GetAccountByID(id int) (*Account, error) {
 	rows, err := s.db.Query("SELECT * FROM accounts WHERE id = $1", id)

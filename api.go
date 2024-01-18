@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/gorilla/mux"
 )
@@ -39,8 +40,8 @@ type APIServer struct {
 func (s *APIServer) Run() {
 	router := mux.NewRouter()
 
-	router.HandleFunc("/account", makeHTTPHandleFunc(s.handleAccount))
-	router.HandleFunc("/account/{id}", makeHTTPHandleFunc(s.handleGetAccountByID))
+	router.HandleFunc("/accounts", makeHTTPHandleFunc(s.handleAccount))
+	router.HandleFunc("/accounts/{id}", makeHTTPHandleFunc(s.handleGetAccountByID))
 	router.HandleFunc("/transfer", makeHTTPHandleFunc(s.handleTransfer))
 
 	log.Println("Server started on port: ", s.listenAddr)
@@ -82,6 +83,10 @@ func (s *APIServer) handleGetAccountByID(w http.ResponseWriter, r *http.Request)
 		return WriteJSON(w, http.StatusOK, account)
 	}
 
+	if r.Method == "PATCH" {
+		return s.handleUpdateAccount(w, r)
+	}
+
 	if r.Method == "DELETE" {
 		return s.handleDeleteAccount(w, r)
 	}
@@ -116,18 +121,42 @@ func (s *APIServer) handleCreateAccount(w http.ResponseWriter, r *http.Request) 
 	return WriteJSON(w, http.StatusOK, account)
 }
 
-// func (s *APIServer) handleUpdateAccount(w http.ResponseWriter, r *http.Request) error {
-// 	id, err := getID(r)
-// 	if err != nil {
-// 		return err
-// 	}
+func (s *APIServer) handleUpdateAccount(w http.ResponseWriter, r *http.Request) error {
+	req := new(UpdateAccountRequest)
+	if err := json.NewDecoder(r.Body).Decode(req); err != nil {
+		return err
+	}
 
-// 	if err := s.store.UpdateAccount(id); err != nil {
-// 		return err
-// 	}
+	id, err := getID(r)
+	if err != nil {
+		return err
+	}
 
-// 	return WriteJSON(w, http.StatusNoContent, map[string]int{"deleted": id})
-// }
+	old, err := s.store.GetAccountByID(id)
+	if err != nil {
+		return err
+	}
+
+	mapped, err := MapAccount(
+		old.ID,
+		req.FirstName,
+		req.LastName,
+		old.Number,
+		old.CreatedAt,
+		time.Now().UTC(),
+	)
+
+	if err != nil {
+		return err
+	}
+
+	account, err := s.store.UpdateAccount(mapped)
+	if err != nil {
+		return err
+	}
+
+	return WriteJSON(w, http.StatusOK, account)
+}
 
 func (s *APIServer) handleDeleteAccount(w http.ResponseWriter, r *http.Request) error {
 	id, err := getID(r)
