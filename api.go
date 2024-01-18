@@ -175,7 +175,7 @@ func (s *APIServer) handleDeleteAccount(w http.ResponseWriter, r *http.Request) 
 		return err
 	}
 
-	return WriteJSON(w, http.StatusNoContent, &MetaResponse{
+	return WriteJSON(w, http.StatusOK, &MetaResponse{
 		Status:  http.StatusOK,
 		Message: "Account Deleted",
 		Data:    id,
