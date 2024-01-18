@@ -6,7 +6,6 @@ import (
 	"log"
 	"net/http"
 	"strconv"
-	"time"
 
 	"github.com/gorilla/mux"
 )
@@ -137,15 +136,7 @@ func (s *APIServer) handleUpdateAccount(w http.ResponseWriter, r *http.Request) 
 		return err
 	}
 
-	mapped, err := MapAccount(
-		old.ID,
-		req.FirstName,
-		req.LastName,
-		old.Number,
-		old.CreatedAt,
-		time.Now().UTC(),
-	)
-
+	mapped, err := MapAccount(old, req.FirstName, req.LastName)
 	if err != nil {
 		return err
 	}

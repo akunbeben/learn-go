@@ -26,13 +26,13 @@ type Account struct {
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
-func MapAccount(id int, firstName, lastName string, number int64, createdAt, updatedAt time.Time) (*Account, error) {
+func MapAccount(account *Account, firstName, lastName string) (*Account, error) {
 	return &Account{
-		ID:        id,
+		ID:        account.ID,
 		FirstName: firstName,
 		LastName:  lastName,
-		Number:    number,
-		CreatedAt: time.Now().UTC(),
+		Number:    account.Number,
+		CreatedAt: account.CreatedAt,
 		UpdatedAt: time.Now().UTC(),
 	}, nil
 }
