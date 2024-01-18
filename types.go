@@ -16,6 +16,12 @@ type UpdateAccountRequest struct {
 	LastName  string `json:"lastName"`
 }
 
+type MetaResponse struct {
+	Status  int    `json:"status"`
+	Message string `json:"message"`
+	Data    any    `json:"data"`
+}
+
 type Account struct {
 	ID        int       `json:"id"`
 	FirstName string    `json:"firstName"`

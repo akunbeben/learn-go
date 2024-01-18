@@ -12,14 +12,14 @@ import (
 
 type apiFunc func(http.ResponseWriter, *http.Request) error
 
-type ApiError struct {
-	Error string `json:"error"`
-}
-
 func makeHTTPHandleFunc(f apiFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if err := f(w, r); err != nil {
-			WriteJSON(w, http.StatusBadRequest, ApiError{Error: err.Error()})
+			WriteJSON(w, http.StatusBadRequest, &MetaResponse{
+				Status:  http.StatusBadRequest,
+				Message: err.Error(),
+				Data:    nil,
+			})
 		}
 	}
 }
@@ -79,7 +79,11 @@ func (s *APIServer) handleGetAccountByID(w http.ResponseWriter, r *http.Request)
 			return err
 		}
 
-		return WriteJSON(w, http.StatusOK, account)
+		return WriteJSON(w, http.StatusOK, &MetaResponse{
+			Status:  http.StatusOK,
+			Message: "Account",
+			Data:    account,
+		})
 	}
 
 	if r.Method == "PATCH" {
@@ -100,7 +104,11 @@ func (s *APIServer) handleGetAccount(w http.ResponseWriter, r *http.Request) err
 		return err
 	}
 
-	return WriteJSON(w, http.StatusOK, accounts)
+	return WriteJSON(w, http.StatusOK, &MetaResponse{
+		Status:  http.StatusOK,
+		Message: "Accounts",
+		Data:    accounts,
+	})
 }
 
 func (s *APIServer) handleCreateAccount(w http.ResponseWriter, r *http.Request) error {
@@ -117,7 +125,11 @@ func (s *APIServer) handleCreateAccount(w http.ResponseWriter, r *http.Request) 
 		return err
 	}
 
-	return WriteJSON(w, http.StatusOK, account)
+	return WriteJSON(w, http.StatusCreated, &MetaResponse{
+		Status:  http.StatusCreated,
+		Message: "Account Created",
+		Data:    account,
+	})
 }
 
 func (s *APIServer) handleUpdateAccount(w http.ResponseWriter, r *http.Request) error {
@@ -146,7 +158,11 @@ func (s *APIServer) handleUpdateAccount(w http.ResponseWriter, r *http.Request) 
 		return err
 	}
 
-	return WriteJSON(w, http.StatusOK, account)
+	return WriteJSON(w, http.StatusOK, &MetaResponse{
+		Status:  http.StatusOK,
+		Message: "Account Updated",
+		Data:    account,
+	})
 }
 
 func (s *APIServer) handleDeleteAccount(w http.ResponseWriter, r *http.Request) error {
@@ -159,7 +175,11 @@ func (s *APIServer) handleDeleteAccount(w http.ResponseWriter, r *http.Request) 
 		return err
 	}
 
-	return WriteJSON(w, http.StatusNoContent, map[string]int{"deleted": id})
+	return WriteJSON(w, http.StatusNoContent, &MetaResponse{
+		Status:  http.StatusOK,
+		Message: "Account Deleted",
+		Data:    id,
+	})
 }
 
 func getID(r *http.Request) (int, error) {
