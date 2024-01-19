@@ -16,10 +16,13 @@ type UpdateAccountRequest struct {
 	LastName  string `json:"lastName"`
 }
 
-type MetaResponse struct {
-	Status  int    `json:"status"`
-	Message string `json:"message"`
-	Data    any    `json:"data"`
+type UpdateBalanceRequest struct {
+	Amount int64 `json:"amount"`
+}
+
+type TransferRequest struct {
+	Number int64 `json:"number"`
+	Amount int64 `json:"amount"`
 }
 
 type Account struct {
@@ -32,12 +35,13 @@ type Account struct {
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
-func MapAccount(account *Account, firstName, lastName string) (*Account, error) {
+func MapAccount(account *Account, firstName, lastName string, amount int64) (*Account, error) {
 	return &Account{
 		ID:        account.ID,
 		FirstName: firstName,
 		LastName:  lastName,
 		Number:    account.Number,
+		Balance:   amount,
 		CreatedAt: account.CreatedAt,
 		UpdatedAt: time.Now().UTC(),
 	}, nil

@@ -11,6 +11,8 @@ type Storage interface {
 	CreateAccount(*Account) error
 	DeleteAccount(int) error
 	UpdateAccount(*Account) (*Account, error)
+	UpdateBalance(*Account, int64) (*Account, error)
+	GetAccountByNumber(int64) (*Account, error)
 	GetAccountByID(int) (*Account, error)
 	GetAccounts() ([]*Account, error)
 }
@@ -86,6 +88,25 @@ func (s *PGStore) DeleteAccount(id int) error {
 	return err
 }
 
+func (s *PGStore) UpdateBalance(account *Account, amount int64) (*Account, error) {
+	stmt := `
+	UPDATE accounts
+	SET balance = $1
+	WHERE id = $2
+	`
+
+	res, err := s.db.Exec(stmt, amount, account.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	if _, err := res.RowsAffected(); err != nil {
+		return nil, err
+	}
+
+	return account, nil
+}
+
 func (s *PGStore) UpdateAccount(account *Account) (*Account, error) {
 	stmt := `
 	UPDATE accounts
@@ -110,6 +131,20 @@ func (s *PGStore) UpdateAccount(account *Account) (*Account, error) {
 
 	return account, nil
 }
+
+func (s *PGStore) GetAccountByNumber(number int64) (*Account, error) {
+	rows, err := s.db.Query("SELECT * FROM accounts WHERE number = $1", number)
+	if err != nil {
+		return nil, err
+	}
+
+	for rows.Next() {
+		return scanIntoAccount(rows)
+	}
+
+	return nil, fmt.Errorf("account with account number %d not found", number)
+}
+
 func (s *PGStore) GetAccountByID(id int) (*Account, error) {
 	rows, err := s.db.Query("SELECT * FROM accounts WHERE id = $1", id)
 	if err != nil {
